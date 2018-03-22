@@ -1,0 +1,22 @@
+{
+    "name": "ztaoge/ez-http",
+    "description": "simple http server",
+    "keywords": ["http"],
+    "homepage": "https://github.com/ztaoge/ez-http",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Jintao Zhang",
+            "email": "hi.zhangjt@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7.1.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "EzHttp": "src/"
+        }
+    }
+}
