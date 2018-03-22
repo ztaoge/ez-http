@@ -16,7 +16,7 @@
     },
     "autoload": {
         "psr-4": {
-            "EzHttp": "src/"
+            "EzHttp\\": "src/"
         }
     }
 }
