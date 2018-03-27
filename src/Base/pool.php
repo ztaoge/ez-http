@@ -31,12 +31,6 @@ class Pool
         return self::$instance;
     }
 
-    public function dp($instance)
-    {
-        $className = trim(get_class($instance), '\\');
-        var_dump($this->map[$className], $className);die;
-    }
-
     /**
      * 获取对象
      * @param $class
