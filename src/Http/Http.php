@@ -1,5 +1,5 @@
 <?php
-namespace EzHttp;
+namespace EzHttp\Http;
 
 class Http
 {

@@ -1,6 +1,8 @@
 <?php
 namespace EzHttp;
 
+use EzHttp\Http\Http;
+
 Class Worker
 {
     public $mainSocket;
@@ -15,11 +17,6 @@ Class Worker
      * @var null|string
      */
     public $host = '0.0.0.0:80';
-
-    /**
-     * @var string application root dir
-     */
-    public $appRoot = ROOT . '/Application';
 
     /**
      * http处理回调
