@@ -1,5 +1,7 @@
 <?php
-
+/**
+ * 对象池
+ */
 namespace EzHttp\Base;
 
 class Pool
@@ -69,7 +71,7 @@ class Pool
      * 将对象回收进对象池
      * @param $classInstance
      */
-    public function push($classInstance)
+    public function collect($classInstance)
     {
         $className = trim(get_class($classInstance), '\\');
         $pool = $this->map[$className] ?? null;

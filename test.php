@@ -20,6 +20,10 @@ for ($i = 0; $i < 10; $i++) {
     // 销毁当前对象属性
     $request->destroy();
     // 回收对象
-    $pool->push($request);
+    $pool->collect($request);
 }
 
+$dbh = new PDO('mysql:host=localhost;dbname=test', $user = 'root', $pass = 'root');
+$dbh->query('select * from test');
+$data = $dbh->exec();
+var_dump($data);

@@ -31,6 +31,10 @@ Class Worker
         }
     }
 
+    /**
+     * 运行worker
+     * @throws \Exception
+     */
     public function run()
     {
         // fork worker
@@ -47,6 +51,7 @@ Class Worker
     public function forkWorker()
     {
         $socket = stream_socket_server("tcp://$this->host", $errno, $errstr);
+        $this->mainSocket = $socket;
         for ($i = 0; $i < $this->count; $i++) {
             $pid = pcntl_fork();
             if ($pid > 0) {
@@ -54,18 +59,7 @@ Class Worker
             } elseif ($pid == 0) {
                 //child worker
                 while (1) {
-                    $http = new Http();
-                    // accept
-                    $newSocket = @stream_socket_accept($socket, -1, $remote_address);
-                    $buffer = @fread($newSocket, 65536);
-                    if ($buffer) {
-                        $http->httpDecode($buffer);
-                        $http->handle($this->onMessage);
-                        $str = $http->response;
-                        @fwrite($newSocket, $str, strlen($str));
-                    }
-                    @fclose($newSocket);
-                    unset($http);
+                    $this->acceptConnection($socket);
                 }
             } else {
                 throw new \Exception('fork worker fail');
@@ -73,6 +67,9 @@ Class Worker
         }
     }
 
+    /**
+     * 监控各个子进程
+     */
     public function monitorWorker()
     {
         // 回收结束的子进程
@@ -80,4 +77,25 @@ Class Worker
             pcntl_wait($status, WUNTRACED);
         }
     }
+
+    /**
+     * accept socket连接
+     * @param $socket
+     */
+    public function acceptConnection($socket)
+    {
+        $http = new Http();
+        // accept
+        $newSocket = @stream_socket_accept($socket, -1, $remote_address);
+        $buffer = @fread($newSocket, 65536);
+        if ($buffer) {
+            $http->httpDecode($buffer);
+            $http->handle($this->onMessage);
+            $str = $http->response;
+            @fwrite($newSocket, $str, strlen($str));
+        }
+        @fclose($newSocket);
+        unset($http);
+    }
+
 }
