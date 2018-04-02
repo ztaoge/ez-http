@@ -22,6 +22,13 @@ class Pool
     }
 
     /**
+     * 私有克隆方法防止对象配克隆git
+     */
+    private function __clone()
+    {
+    }
+
+    /**
      * 获取对象池单例
      * @return Pool
      */
