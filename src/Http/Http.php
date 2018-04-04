@@ -1,6 +1,8 @@
 <?php
 namespace EzHttp\Http;
 
+use EzHttp\Http\Request;
+
 class Http
 {
     public $method;
@@ -13,7 +15,7 @@ class Http
      * @param $content
      * @return string
      */
-    public function httpEncode($content)
+    public static function httpEncode($content)
     {
         $header = '';
         $header .= "HTTP/1.1 200 OK\r\n";
@@ -25,9 +27,10 @@ class Http
 
     /**
      * 解析http报文
-     * @param $buffer
+     * @param mixed $buffer
+     * @return array
      */
-    public function httpDecode($buffer)
+    public static function httpDecode($buffer, Request $request)
     {
         list($http_header, $http_body) = explode("\r\n\r\n", $buffer, 2);
         $header_data = explode("\r\n", $http_header);
@@ -35,9 +38,12 @@ class Http
         unset($header_data[0]);
         $request_header = $header_data;
         list($method, $uri, $protocol) = explode(' ', $request_line, 3);
-        $this->method = $method;
-        $this->uri = $uri;
-        $this->data = $http_body;
+
+        return [
+            'method' => $method,
+            'uri' => $uri,
+            'data' => $http_body
+        ];
     }
 
     /**

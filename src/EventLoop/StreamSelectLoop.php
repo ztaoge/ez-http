@@ -1,8 +1,8 @@
 <?php
 
-namespace EzHttp\Base;
+namespace EzHttp\EventLoop;
 
-class StreamSelectLoop
+class StreamSelectLoop implements LoopInterface
 {
     private $readStreams = [];
     private $readListeners = [];
@@ -25,6 +25,18 @@ class StreamSelectLoop
             $this->writeStreams[$key] = $stream;
             $this->writeListeners[$key] = $listener;
         }
+    }
+
+    public function removeReadStream($stream)
+    {
+        $key = (int) $stream;
+        unset($this->readStreams[$key], $this->readListeners[$key]);
+    }
+
+    public function removeWriteStream($stream)
+    {
+        $key = (int) $stream;
+        unset($this->writeStreams[$key], $this->writeListeners[$key]);
     }
 
     /**
