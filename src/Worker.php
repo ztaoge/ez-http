@@ -1,7 +1,11 @@
 <?php
 namespace EzHttp;
 
+use EzHttp\EventLoop\EventLoopFactory;
 use EzHttp\Http\Http;
+use EzHttp\Base\Pool;
+use EzHttp\Http\Request;
+use EzHttp\EventLoop\LoopInterface;
 
 Class Worker
 {
@@ -19,6 +23,11 @@ Class Worker
     public $host = '0.0.0.0:80';
 
     /**
+     * @var LoopInterface
+     */
+    public $loop;
+
+    /**
      * http处理回调
      * @var callable
      */
@@ -29,6 +38,7 @@ Class Worker
         if ($host) {
             $this->host = $host;
         }
+        $this->loop = EventLoopFactory::createEventLoop();
     }
 
     /**
@@ -51,16 +61,16 @@ Class Worker
     public function forkWorker()
     {
         $socket = stream_socket_server("tcp://$this->host", $errno, $errstr);
+        echo "listen on http://$this->host\n";
+        stream_set_blocking($socket, 0);
         $this->mainSocket = $socket;
+
+        // start forking worker
         for ($i = 0; $i < $this->count; $i++) {
             $pid = pcntl_fork();
             if ($pid > 0) {
-                //parent worker
             } elseif ($pid == 0) {
-                //child worker
-                while (1) {
-                    $this->acceptConnection($socket);
-                }
+                $this->acceptConnection($socket);
             } else {
                 throw new \Exception('fork worker fail');
             }
@@ -84,18 +94,22 @@ Class Worker
      */
     public function acceptConnection($socket)
     {
-        $http = new Http();
-        // accept
-        $newSocket = @stream_socket_accept($socket, -1, $remote_address);
-        $buffer = @fread($newSocket, 65536);
-        if ($buffer) {
-            $http->httpDecode($buffer);
-            $http->handle($this->onMessage);
-            $str = $http->response;
-            @fwrite($newSocket, $str, strlen($str));
-        }
-        @fclose($newSocket);
-        unset($http);
+        $this->loop->addReadStream($socket, function ($socket) {
+            $newSocket = @stream_socket_accept($socket);
+            if ($newSocket) {
+                stream_set_read_buffer($newSocket, 0);
+                $buffer = stream_get_contents($newSocket);
+                if ($buffer) {
+                    echo $buffer;
+                    $requestParams = Http::httpDecode($buffer);
+                    $msg = json_encode($requestParams);
+                    $response = Http::httpEncode($msg);
+                    @fwrite($newSocket, $response, strlen($response));
+                }
+                @fclose($newSocket);
+            }
+        });
+        $this->loop->loop();
     }
 
 }

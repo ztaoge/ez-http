@@ -5,10 +5,15 @@ use EzHttp\Http\Request;
 require_once 'vendor/autoload.php';
 
 $worker = new \EzHttp\Worker('0.0.0.0:8233');
+$worker->count = 4;
 $worker->onMessage = function () {
     return 'hello world';
 };
-//$worker->run();
+try {
+    $worker->run();
+} catch (\Exception $e) {
+    echo $e->getMessage();
+}
 
 
 $pool = \EzHttp\Base\Pool::getInstance();
@@ -22,8 +27,3 @@ for ($i = 0; $i < 10; $i++) {
     // 回收对象
     $pool->collect($request);
 }
-
-$dbh = new PDO('mysql:host=localhost;dbname=test', $user = 'root', $pass = 'root');
-$dbh->query('select * from test');
-$data = $dbh->exec();
-var_dump($data);

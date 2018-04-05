@@ -30,7 +30,7 @@ class Http
      * @param mixed $buffer
      * @return array
      */
-    public static function httpDecode($buffer, Request $request)
+    public static function httpDecode($buffer, Request $request = null)
     {
         list($http_header, $http_body) = explode("\r\n\r\n", $buffer, 2);
         $header_data = explode("\r\n", $http_header);
