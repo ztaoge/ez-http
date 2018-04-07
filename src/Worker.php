@@ -106,8 +106,8 @@ Class Worker
                     $response = Http::httpEncode($msg);
                     @fwrite($newSocket, $response, strlen($response));
                 }
-                @fclose($newSocket);
             }
+            @fclose($newSocket);
         });
         $this->loop->loop();
     }
