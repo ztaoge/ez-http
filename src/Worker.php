@@ -107,7 +107,8 @@ Class Worker
                     @fwrite($newSocket, $response, strlen($response));
                 }
             }
-            @fclose($newSocket);
+            @stream_socket_shutdown($newSocket, STREAM_SHUT_RDWR);
+            stream_set_blocking($newSocket, false);
         });
         $this->loop->loop();
     }
