@@ -106,9 +106,9 @@ Class Worker
                     $response = Http::httpEncode($msg);
                     @fwrite($newSocket, $response, strlen($response));
                 }
+                @stream_socket_shutdown($newSocket, STREAM_SHUT_RDWR);
+                stream_set_blocking($newSocket, false);
             }
-            @stream_socket_shutdown($newSocket, STREAM_SHUT_RDWR);
-            stream_set_blocking($newSocket, false);
         });
         $this->loop->loop();
     }
