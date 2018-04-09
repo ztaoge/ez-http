@@ -54,9 +54,7 @@ class TcpConnection
     {
         $buffer = stream_get_contents($socket);
         if ($buffer === '' || $buffer === false) {
-            if (!is_resource($socket)) {
-                $this->destroy();
-            }
+            $this->destroy();
             return;
         }
         try {
