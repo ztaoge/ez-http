@@ -1,6 +1,7 @@
 <?php
 namespace EzHttp;
 
+use EzHttp\Connection\TcpConnection;
 use EzHttp\EventLoop\EventLoopFactory;
 use EzHttp\Http\Http;
 use EzHttp\Base\Pool;
@@ -25,7 +26,7 @@ Class Worker
     /**
      * @var LoopInterface
      */
-    public $loop;
+    public static $loop;
 
     /**
      * http处理回调
@@ -38,7 +39,7 @@ Class Worker
         if ($host) {
             $this->host = $host;
         }
-        $this->loop = EventLoopFactory::createEventLoop();
+        self::$loop = EventLoopFactory::createEventLoop();
     }
 
     /**
@@ -62,7 +63,6 @@ Class Worker
     {
         $socket = stream_socket_server("tcp://$this->host", $errno, $errstr);
         echo "listen on http://$this->host\n";
-        stream_set_blocking($socket, 0);
         $this->mainSocket = $socket;
 
         // start forking worker
@@ -89,28 +89,20 @@ Class Worker
     }
 
     /**
-     * accept socket连接
+     * accept socket连接 非阻塞
      * @param $socket
      */
     public function acceptConnection($socket)
     {
-        $this->loop->addReadStream($socket, function ($socket) {
+        self::$loop->addReadStream($socket, function ($socket) {
             $newSocket = @stream_socket_accept($socket);
-            if ($newSocket) {
-                stream_set_read_buffer($newSocket, 0);
-                $buffer = stream_get_contents($newSocket);
-                if ($buffer) {
-                    echo $buffer;
-                    $requestParams = Http::httpDecode($buffer);
-                    $msg = json_encode($requestParams);
-                    $response = Http::httpEncode($msg);
-                    @fwrite($newSocket, $response, strlen($response));
-                }
-                @stream_socket_shutdown($newSocket, STREAM_SHUT_RDWR);
-                stream_set_blocking($newSocket, false);
+            if ($newSocket === false) {
+                return;
             }
+            $conn = new TcpConnection($newSocket);
+            $conn->onMessage = $this->onMessage;
         });
-        $this->loop->loop();
+        self::$loop->loop();
     }
 
 }

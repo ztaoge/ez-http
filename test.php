@@ -6,8 +6,8 @@ require_once 'vendor/autoload.php';
 
 $worker = new \EzHttp\Worker('0.0.0.0:8233');
 $worker->count = 4;
-$worker->onMessage = function () {
-    return 'hello world';
+$worker->onMessage = function (\EzHttp\Connection\TcpConnection $connection) {
+    $connection->send("hello\n");
 };
 try {
     $worker->run();
