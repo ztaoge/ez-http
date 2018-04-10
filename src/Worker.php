@@ -39,6 +39,7 @@ Class Worker
         if ($host) {
             $this->host = $host;
         }
+        //注册全局事件轮询变量
         self::$loop = EventLoopFactory::createEventLoop();
     }
 

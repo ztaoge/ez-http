@@ -63,6 +63,7 @@ class TcpConnection
             echo $e->getMessage() . "\n";
             exit(250);
         }
+        Worker::$loop->removeReadStream($socket);
         return;
     }
 

@@ -40,21 +40,26 @@ class StreamSelectLoop implements LoopInterface
     }
 
     /**
+     * 不断地调用select
      * event loop
      */
     public function loop()
     {
         while (1) {
-            $this->waitForStreamActivity($timeout = 0);
+            $this->waitForStreamActivity(null);
         }
     }
 
+    /**
+     * 调用select，处理已准备好的读或写操作
+     * @param int $timeout
+     */
     private function waitForStreamActivity($timeout)
     {
         $read = $this->readStreams;
         $write = $this->writeStreams;
 
-        $availableStreamNum = @stream_select($read, $write, $except, $timeout);
+        $availableStreamNum = $this->streamSelect($read, $write, $timeout);
         if (false === $availableStreamNum) {
             return;
         }
@@ -72,5 +77,24 @@ class StreamSelectLoop implements LoopInterface
                 call_user_func($this->writeListeners[$key], $stream);
             }
         }
+    }
+
+    /**
+     * stream select
+     * @param $read
+     * @param $write
+     * @param $timeout
+     * @return int
+     */
+    protected function streamSelect(&$read, &$write, $timeout)
+    {
+        if ($read || $write) {
+            $except = null;
+
+            // suppress warnings that occur, when stream_select is interrupted by a signal
+            // stream_select timeout时间不能都设置为0，这样每次stream_select调用都有返回，会增加脚本的cpu时间
+            return @stream_select($read, $write, $except, $timeout === null ? null : 0, $timeout);
+        }
+        $timeout && usleep($timeout);
     }
 }
