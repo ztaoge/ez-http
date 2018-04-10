@@ -67,11 +67,13 @@ Class Worker
         $this->mainSocket = $socket;
 
         // start forking worker
+        // TODO: 如果使用epoll等，多进程accept是否会出现惊群？
         for ($i = 0; $i < $this->count; $i++) {
             $pid = pcntl_fork();
             if ($pid > 0) {
             } elseif ($pid == 0) {
-                $this->acceptConnection($socket);
+                stream_set_blocking($socket, 0);
+                $this->acceptConnection();
             } else {
                 throw new \Exception('fork worker fail');
             }
@@ -91,13 +93,14 @@ Class Worker
 
     /**
      * accept socket连接 非阻塞
-     * @param $socket
      */
-    public function acceptConnection($socket)
+    public function acceptConnection()
     {
-        self::$loop->addReadStream($socket, function ($socket) {
-            $newSocket = @stream_socket_accept($socket);
-            if ($newSocket === false) {
+        self::$loop->addReadStream($this->mainSocket, function ($socket) {
+            // 设置accept的超时时间为0，防止请求超时进程被阻塞
+            $newSocket = @stream_socket_accept($socket, 0);
+            // 连接失败
+            if (!$newSocket) {
                 return;
             }
             $conn = new TcpConnection($newSocket);

@@ -41,6 +41,7 @@ class TcpConnection
     {
         $this->socket = $socket;
         stream_set_blocking($socket, 0);
+        stream_set_read_buffer($socket, 0);
         Worker::$loop->addReadStream($socket, function ($socket) {
             $this->read($socket);
         });
@@ -63,7 +64,6 @@ class TcpConnection
             echo $e->getMessage() . "\n";
             exit(250);
         }
-        Worker::$loop->removeReadStream($socket);
         return;
     }
 
