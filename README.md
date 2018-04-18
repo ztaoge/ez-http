@@ -1,4 +1,4 @@
 ez-http
 
-### usage
+## Usage
 `compose install ztaoge/ez-http`
